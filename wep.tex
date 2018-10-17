@@ -53,9 +53,13 @@ he or she would negate all the efforts of \ac{WEP} to provide confidentiality  o
 \subsubsection{Keystream duplication detection}~\\
 \citeauthor{borisov2001intercepting} in \cite{borisov2001intercepting} discuss several flaws in design of WEP that an adversary can exploit to achieve keystream reuse. 
 
-First \ac{IV}'s are public, so any reuse of \ac{IV}'s might be easily detected. An adversary, who is able to detect duplicate \ac{IV}'s, might collect a large number of sets of the same keystream ciphertexts. 
+First, \ac{IV}'s are public, so any reuse of \ac{IV}'s might be easily detected. An adversary, who is able to detect duplicate \ac{IV}'s, might collect a large number of sets of the same keystream ciphertexts. 
 
 Second, the \ac{PCMCIA} standard mechanism is another issue. The \ac{PCMCIA} normally resets \ac{IV} $v$ to $0$ every time \ac{PCMCIA} is re-initialized, after that increments by $1$ for each packet transmission. Consequently, keystreams, corresponding to low-valued \ac{IV}'s, seems to be reused more frequently. 
 
-Finally, \ac{WEP} standard expose all \ac{WEP} implementation. This often leads to serious risks of keystreams exposure.
+Finally, \ac{WEP} standard exposes all \ac{WEP} implementation. This often leads to serious risks of keystreams exposure. As the duplication of \ac{IV} is unavoidable in \ac{WEP}, a patient attacker would readily get a duplicate \ac{IV} whenever it appears. Due to \ac{WEP} mechanism, this issue can not be thwarted.
 
+In conclusion, there are many security holes in the architecture of \ac{WEP} that an adversary can exploit to detect keystream reuse. Through network observation, a patient attacker might have chance to acquire a large set of ciphertexts which have the same keystream.
+
+\subsubsection{Plaintexts acquirement}~\\
+Authors in \cite{borisov2001intercepting} also analyse about the risk of the plaintext availability to an adversary.
