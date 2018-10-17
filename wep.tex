@@ -27,11 +27,11 @@ $P$ includes $M$ and checksum $c(M)$. The receiver would split $P$ and check if 
 	\label{fig:wep}
 \end{figure}
 
-\subsection{The risk of keystream reuse}
+\subsection{Keystream reuse attack}
 
 The main problem of \ac{WEP} is the length of secret key. As the length of shared secrete key is $40bits$, the possibility of reusing this secret key is extremely high \cite{al2006ieee}. Although \ac{RC4} algorithm can support the length of the secret key up to $104bits$, it would be infeasible to stop attackers to explore the key in less than 15 minutes \cite{convery2003cisco}. Furthermore, the use of shared secret key which is higher than $40bits$ might causes communication problems as the default setting on other devices is $40bits$. 
 
-The use of $24bits$ \ac{IV} is another problem. the number of possible \ac{IV} is $2^{24}$. This is a small number in the scope of data transmission which causes multiple uses of \ac{IV}. Moreover, the transmission of \ac{IV} is clear over the network, it would deteriorate the weakness of \ac{WEP}.
+The use of $24bits$ \ac{IV} is another problem. the number of possible \ac{IV} is $2^{24}$. This is a small number in the scope of data transmission which causes multiple uses of \ac{IV}. The reuse of \ac{IV} is often called "\ac{IV} collision". Moreover, the transmission of \ac{IV} is clear over the network, it would deteriorate the weakness of \ac{WEP}. Moreover, \citeauthor{shunman2003wlan} in \cite{shunman2003wlan} describe several security problems of using \ac{RC4} keystream. \ac{RC4} does not support random access which is a fatal pitfall in security of \ac{WEP} as it make the crypt-analysation effort-less.
 
 This \ac{WEP} scheme would cause a serious problem if two cipher texts use the same \ac{RC4} key stream. Due to the \ac{Xor} operation properties, the \ac{Xor} operation over two ciphertext using the same key stream will result equivalent to the \ac{Xor} operation over two corresponding plaintexts:
 
@@ -63,3 +63,17 @@ In conclusion, there are many security holes in the architecture of \ac{WEP} tha
 
 \subsubsection{Plaintexts acquirement}~\\
 Authors in \cite{borisov2001intercepting} also analyse about the risk of the plaintext availability to an adversary.
+
+As above discussion, if one plaintext is known, it is easy to derive the contents of another directly. As a result, plaintext security is another threat to \ac{WLAN}
+
+An attacker might derive the contents of several predictable messages. Login, an authenticated step familiar to Internet users, often has some password prompts or welcome message, which can be acquired by an adversary. Another example is that the attacker could analyse the traffic patterns and lengths. Those techniques would provide a large quantity of plaintexts feasible to keystream reuse attack.
+
+Another technique is to cause the plaintext to be transmitted between devices under control of that attacker. The attacker may also send spam e-mail to an user and wait for them to check over wireless link. This method is considered thoughtful as it does not raise too many alarms.
+
+In some circumstances, plaintext obtaining seems to be simpler. As the attacker would actively observe the encrypted from and decrypted form of messages over network. As \ac{STA} broadcasts the messages to all \ac{AP}, this problem is unavoidable.
+
+\subsubsection{Decryptional Dictionaries}~\\
+Once the plaintext of a ciphertext is obtained, the attacker would probe the value of keystream used in that ciphertext. Overtime, he or she could build a table of the keystream corresponding to each \ac{IV} as well as plaintext. The complete table might encroach $24GB$ external memory and it would help the attacker to immediately decrypt each ciphertext in \ac{WLAN} with very little work. In \cite{al2006ieee}, \citeauthor{al2006ieee} call this attack is "dictionary attack".
+
+
+
