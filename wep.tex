@@ -5,7 +5,7 @@
 
 \ac{WEP} mechanism is based on the \ac{RC4} algorithm\cite{mousa2006evaluation} that aims to supply security to \ac{WLAN} equivalent to \ac{LAN}. In general, the \ac{WEP} encryption of a frame includes three steps described in details in \ac{IEEE}802.11 standard \cite{al2006ieee}. The encryption algorithm takes input as a plaintext $M$ and produce the output $C$ and transmit over the network. The three steps of \ac{WEP} would be described as below
 \begin{steps}
-	\item \ac{WEP} calculate checksum $c(M)$ and concatenate with the original plaintext $M$, we have the message $P = <M, c(M)>$
+	\item \ac{WEP} calculates checksum $c(M)$ and concatenate with the original plaintext $M$, we have the message $P = <M, c(M)>$
 	\item \ac{WEP} would encrypt the message $P$ achieved in the first step using \ac{RC4}. \ac{RC4} generates a keystream relying on the \ac{IV} $v$ and a key $k$. The keystream is denoted as $RC4(v,k)$. We use \ac{Xor}on the plain text and key stream to get the output $C$ of this step is $C = P \oplus RC4(v,k)$
 	\item Concatenate $C$ achieved in step 2 with the \ac{IV} and transmit $<C, v>$ over the network.
 \end{steps}
@@ -27,7 +27,13 @@ $P$ includes $M$ and checksum $c(M)$. The receiver would split $P$ and check if 
 	\label{fig:wep}
 \end{figure}
 
-However, this scheme would cause a serious problem if two cipher texts use the same \ac{RC4} key stream. Due to the \ac{Xor} operation properties, the \ac{Xor} operation over two ciphertext using the same key stream will result as the \ac{Xor} operation over two corresponding plaintexts:
+\subsection{The risk of keystream reuse}
+
+The main problem of \ac{WEP} is the length of secret key. As the length of shared secrete key is $40bits$, the possibility of reusing this secret key is extremely high \cite{al2006ieee}. Although \ac{RC4} algorithm can support the length of the secret key up to $104bits$, it would be infeasible to stop attackers to explore the key in less than 15 minutes \cite{convery2003cisco}. Furthermore, the use of shared secret key which is higher than $40bits$ might causes communication problems as the default setting on other devices is $40bits$. 
+
+The use of $24bits$ \ac{IV} is another problem. the number of possible \ac{IV} is $2^{24}$. This is a small number in the scope of data transmission which causes multiple uses of \ac{IV}. Moreover, the transmission of \ac{IV} is clear over the network, it would deteriorate the weakness of \ac{WEP}.
+
+This \ac{WEP} scheme would cause a serious problem if two cipher texts use the same \ac{RC4} key stream. Due to the \ac{Xor} operation properties, the \ac{Xor} operation over two ciphertext using the same key stream will result equivalent to the \ac{Xor} operation over two corresponding plaintexts:
 
 \begin{align}
 	C_1 &= P_1 \oplus RC4(v,k)\\
@@ -36,11 +42,20 @@ However, this scheme would cause a serious problem if two cipher texts use the s
 	C_1 \oplus C_2 &= P_1 \oplus P_2
 \end{align}
 
-The above peril property of \ac{RC4} might incapacitate most of the security goals in \ac{WLAN} as the attacker might know $P_1$ or $P_2$ and do the \ac{Xor} operation again to get the original plaintext of others. This means that any adversary who know a plaintext can use it to decrypt others. In case that an adversary obtains these two conditions:
+The above peril property of \ac{RC4} might incapacitate most of the security goals in \ac{WLAN} as the attacker might know $P_1$ or $P_2$ and do the \ac{Xor} operation again to get the original plaintext of others. This means that any adversary who know a plaintext can use it to decrypt others. As a result, In case that an adversary obtains these two conditions:
 \begin{itemize}
 	\item Ciphertexts that use the same keystreams.
 	\item The availability of several plaintexts.
 \end{itemize}
 he or she would negate all the efforts of \ac{WEP} to provide confidentiality  outrageously. Unfortunately, both of the above conditions could absolutely be achieved by skillful and patient attackers.
 
-\citeauthor{borisov2001intercepting} in \cite{borisov2001intercepting} discuss
+
+\subsubsection{Keystream duplication detection}~\\
+\citeauthor{borisov2001intercepting} in \cite{borisov2001intercepting} discuss several flaws in design of WEP that an adversary can exploit to achieve keystream reuse. 
+
+First \ac{IV}'s are public, so any reuse of \ac{IV}'s might be easily detected. An adversary, who is able to detect duplicate \ac{IV}'s, might collect a large number of sets of the same keystream ciphertexts. 
+
+Second, the \ac{PCMCIA} standard mechanism is another issue. The \ac{PCMCIA} normally resets \ac{IV} $v$ to $0$ every time \ac{PCMCIA} is re-initialized, after that increments by $1$ for each packet transmission. Consequently, keystreams, corresponding to low-valued \ac{IV}'s, seems to be reused more frequently. 
+
+Finally, \ac{WEP} standard expose all \ac{WEP} implementation. This often leads to serious risks of keystreams exposure.
+
