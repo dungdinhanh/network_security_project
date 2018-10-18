@@ -2,7 +2,7 @@
 
 
 \ac{WEP} is a security protocol, defined in \ac{IEEE}802.11, to secure link-level data throughout wireless transmission. Its message encryption and decryption mechanism was aimed to provide three main goals: confidentiality, access control and data integrity from data-link layer.
-\subsection{WEP mechanism}\label{wep_mec}
+\subsection{WEP mechanism}\label{subsec:wep_mec}
 \ac{WEP} mechanism is based on the \ac{RC4} algorithm\cite{mousa2006evaluation} that aims to supply security to \ac{WLAN} equivalent to \ac{LAN}. In general, the \ac{WEP} encryption of a frame includes three steps described in details in \ac{IEEE}802.11 standard \cite{al2006ieee}. The encryption algorithm takes input as a plaintext $M$ and produce the output $C$ and transmit over the network. The three steps of \ac{WEP} would be described as below
 \begin{steps}
 	\item \ac{WEP} calculates checksum $c(M)$ and concatenate with the original plaintext $M$, we have the message $P = <M, c(M)>$
@@ -68,7 +68,7 @@ As above discussion, if one plaintext is known, it is easy to derive the content
 
 An attacker might derive the contents of several predictable messages. Login, an authenticated step familiar to Internet users, often has some password prompts or welcome message, which can be acquired by an adversary. Another example is that the attacker could analyse the traffic patterns and lengths. Those techniques would provide a large quantity of plaintexts feasible to keystream reuse attack.
 
-Another technique is to cause the plaintext to be transmitted between devices under control of that attacker. The attacker may also send spam e-mail to an user and wait for them to check over wireless link. This method is considered thoughtful as it does not raise too many alarms.
+Another technique is to cause the plaintext to be transmitted between devices under control of that attacker then observe the encrypted form and decrypted form of that plaintext. The attacker may also send spam e-mail to an user and wait for them to check over wireless link. This method is considered thoughtful as it does not raise too many alarms.
 
 In some circumstances, plaintext obtaining seems to be simpler. The attacker could actively observe the encrypted from and decrypted form of messages over network. As \ac{STA} broadcasts the messages to all \ac{AP}, this problem is unavoidable.
 
@@ -81,4 +81,22 @@ Another provision of \ac{WEP} is message authentication through Integrity checks
 
 However, the protection of \ac{CRC} is not sufficient to protect message from modification. it is designed to check if an error appears in the message, yet it is not resistant to malicious attacks. Once again, the \ac{WEP} protocol use stream cipher exacerbates the vulnerability of \ac{CRC}.
 
+\subsubsection{Message Modification}
+\newtheorem{property}{Property}
 
+\begin{property}
+	\ac{WEP}'s checksum is a linear function of the message
+	\label{prop:linear}
+\end{property}
+
+The Property \autoref{prop:linear} reveals that checksumming function distributes over \ac{Xor} operations.
+\begin{equation}
+	c(a\oplus b) = c(a) \oplus c(b)\, \forall a,b
+	\label{equation:linear_prop}
+\end{equation}
+
+As a consequence, the process of modifying ciphertexts without intervening the checksum become possible. In \autoref{subsec:wep_mec}, we describe the final step of sending message in \ac{WEP}:
+\begin{equation}
+	A \rightarrow B : <v,C>
+\end{equation}
+While $C$ is ciphertext $C = RC4(v,k) \oplus <M, c(M)>$ and $v$ is $IV$. We would describe the technique below to turn a transmitted message $<v, C>$ into $<v, C'>$ in which $C'$ decrypts $M'$. $M'$ is modified message of $M$ by using \ac{Xor} operation $M' = M\oplus \Delta$ in which $\Delta$ is chosen arbitrarily.
