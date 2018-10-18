@@ -1,13 +1,13 @@
-\section{Wired Equivalent Protocol - WEP}
+\section{Wired Equivalent Protocol - WEP}\label{section:wep}
 
 
 \ac{WEP} is a security protocol, defined in \ac{IEEE}802.11, to secure link-level data throughout wireless transmission. Its message encryption and decryption mechanism was aimed to provide three main goals: confidentiality, access control and data integrity from data-link layer.
 \subsection{WEP mechanism}\label{subsec:wep_mec}
 \ac{WEP} mechanism is based on the \ac{RC4} algorithm\cite{mousa2006evaluation} that aims to supply security to \ac{WLAN} equivalent to \ac{LAN}. In general, the \ac{WEP} encryption of a frame includes three steps described in details in \ac{IEEE}802.11 standard \cite{al2006ieee}. The encryption algorithm takes input as a plaintext $M$ and produce the output $C$ and transmit over the network. The three steps of \ac{WEP} would be described as below
 \begin{steps}
-	\item \ac{WEP} calculates checksum $c(M)$ and concatenate with the original plaintext $M$, we have the message $P = <M, c(M)>$
+	\item \ac{WEP} calculates checksum $c(M)$ and concatenate with the original plaintext $M$, we have the message $P = \langle M, c(M) \rangle $
 	\item \ac{WEP} would encrypt the message $P$ achieved in the first step using \ac{RC4}. \ac{RC4} generates a keystream relying on the \ac{IV} $v$ and a key $k$. The keystream is denoted as $RC4(v,k)$. We use \ac{Xor}on the plain text and key stream to get the output $C$ of this step is $C = P \oplus RC4(v,k)$
-	\item Concatenate $C$ achieved in step 2 with the \ac{IV} and transmit $<C, v>$ over the network.
+	\item Concatenate $C$ achieved in step 2 with the \ac{IV} and transmit $\langle C, v \rangle $ over the network.
 \end{steps}
 
 An \ac{AP} would catch the message and decrypt it by using \ac{Xor} operation over the encrypted message with \ac{RC4} key stream.  First, \ac{WEP} would extract message in to $v$ and $C$. After that, a \ac{RC4} keystream would be generated and \ac{Xor} it against $C$ to obtain plaintext $P$:
@@ -81,7 +81,7 @@ Another provision of \ac{WEP} is message authentication through Integrity checks
 
 However, the protection of \ac{CRC} is not sufficient to protect message from modification. it is designed to check if an error appears in the message, yet it is not resistant to malicious attacks. Once again, the \ac{WEP} protocol use stream cipher exacerbates the vulnerability of \ac{CRC}.
 
-\subsubsection{Message Modification}
+\subsubsection{Message Modification}\label{subsub:mess_modi}
 \newtheorem{property}{Property}
 
 \begin{property}
@@ -89,7 +89,7 @@ However, the protection of \ac{CRC} is not sufficient to protect message from mo
 	\label{prop:linear}
 \end{property}
 
-The Property \autoref{prop:linear} reveals that checksumming function distributes over \ac{Xor} operations.
+The Property \autoref{prop:linear} reveals that \ac{CRC} checksumming function distributes over \ac{Xor} operations.
 \begin{equation}
 	c(a\oplus b) = c(a) \oplus c(b)\, \forall a,b
 	\label{equation:linear_prop}
@@ -97,6 +97,28 @@ The Property \autoref{prop:linear} reveals that checksumming function distribute
 
 As a consequence, the process of modifying ciphertexts without intervening the checksum become possible. In \autoref{subsec:wep_mec}, we describe the final step of sending message in \ac{WEP}:
 \begin{equation}
-	A \rightarrow B : <v,C>
+	A \rightarrow B : \langle v,C \rangle 
 \end{equation}
-While $C$ is ciphertext $C = RC4(v,k) \oplus <M, c(M)>$ and $v$ is $IV$. We would describe the technique below to turn a transmitted message $<v, C>$ into $<v, C'>$ in which $C'$ decrypts $M'$. $M'$ is modified message of $M$ by using \ac{Xor} operation $M' = M\oplus \Delta$ in which $\Delta$ is chosen arbitrarily.
+While $C$ is ciphertext $C = RC4(v,k) \oplus \langle M, c(M) \rangle $ and $v$ is $IV$. We would describe the technique below to turn a transmitted message $\langle v, C \rangle $ into $\langle v, C' \rangle $ in which $C'$ decrypts $M'$. $M'$ is modified message of $M$ by using \ac{Xor} operation $M' = M\oplus \Delta$ in which $\Delta$ is chosen arbitrarily.
+
+In order to achieve $C'$, an enemy only needs to do the \ac{Xor} operation over $C$ and the concatenation of $\Delta$ and $c(\Delta)$ where $c(\Delta)$ is the checksum of $\Delta$.
+\begin{align}
+	C' &= C \oplus \langle\Delta, c(\Delta)\rangle\\
+	&= RC4(v, k) \oplus \langle M, c(M)\rangle \oplus \langle\Delta, c(\Delta)\rangle \label{equation:xor_application}\\	
+	&= RC4(v, k) \oplus \langle M \oplus \Delta, c(M) \oplus c(\Delta) \rangle
+	\label{equation:xor_delta_result} 
+\end{align}
+
+From \autoref{equation:linear_prop} and \autoref{equation:xor_delta_result} we have:
+\begin{equation}
+	C' = RC4(v,k) \oplus \langle M\oplus\Delta, c(M, \Delta)\rangle
+\end{equation}
+
+Consequently, an opponent can make random modifications to any encrypted message without the fear of detection. From this point of view, \ac{WEP} fails to provide data integrity over \ac{WLAN} - one of three main goals of \ac{WEP} described in the beginning of the \autoref{section:wep}.
+
+\subsubsection{Message injection}~\\
+The previous \autoref{subsub:mess_modi} describes the technique that an attacker might use to modify the message without the fear of detection. As above discussion, the \ac{WEP} protocol fails to provide data integrity. Nevertheless, random modification might transfer the content of the message into a nonsense one. This term, as a result, holds the attacker back.
+
+\begin{property}
+	content...
+\end{property}
