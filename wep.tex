@@ -27,7 +27,7 @@ $P$ includes $M$ and checksum $c(M)$. The receiver would split $P$ and check if 
 	\label{fig:wep}
 \end{figure}
 
-\subsection{Keystream reuse attack}
+\subsection{Keystream reuse attack} \label{subsec:keystream_reuse}
 
 The main problem of \ac{WEP} is the length of secret key. As the length of shared secrete key is $40bits$, the possibility of reusing this secret key is extremely high \cite{al2006ieee}. Although \ac{RC4} algorithm can support the length of the secret key up to $104bits$, it would be infeasible to stop attackers to explore the key in less than 15 minutes \cite{convery2003cisco}. Furthermore, the use of shared secret key which is higher than $40bits$ might causes communication problems as the default setting on other devices is $40bits$. 
 
@@ -117,8 +117,30 @@ From \autoref{equation:linear_prop} and \autoref{equation:xor_delta_result} we h
 Consequently, an opponent can make random modifications to any encrypted message without the fear of detection. From this point of view, \ac{WEP} fails to provide data integrity over \ac{WLAN} - one of three main goals of \ac{WEP} described in the beginning of the \autoref{section:wep}.
 
 \subsubsection{Message injection}~\\
-The previous \autoref{subsub:mess_modi} describes the technique that an attacker might use to modify the message without the fear of detection. As above discussion, the \ac{WEP} protocol fails to provide data integrity. Nevertheless, random modification might transfer the content of the message into a nonsense one. This term, as a result, holds the attacker back.
+The previous \autoref{subsub:mess_modi} describes the technique that an attacker might use to modify the message without the fear of detection. Nevertheless, content modification might make user hesitate due to its irrelevant context in the message. That really holds the attacker back, yet he might use another technique to take down the last goal of \ac{WEP} - access control.
 
 \begin{property}
-	content...
+	The \ac{CRC}-32 checksum is a key-free function of the message \cite{borisov2001intercepting}
+	\label{prop:message_inject}
 \end{property}
+
+The Property\autoref{prop:message_inject} means that if any person knows the plaintext, he will be able to calculate the checksum. Therefore, an attacker might inject arbitrary traffic into the network.
+
+The discussion in \autoref{subsec:keystream_reuse} implies that the known plaintext and ciphertext would reveal the keystream. This keystream would be reused to create new packet using the same \ac{IV}:
+
+\begin{equation}
+	P \oplus C = P \oplus (P \oplus RC4(v, k)) = RC4(v, k)
+	\label{equation:get_rc4}
+\end{equation}
+
+The attacker now would be capable of using $RC4(v, k)$ achieved in \autoref{equation:get_rc4} to encrypt message $M'$ and $C' = \langle M', c(M')\rangle$:
+
+\begin{equation}
+ (A) \rightarrow B: \langle v, C'\rangle
+\end{equation}
+
+This technique again does not raise any alarm because of \ac{WEP} privacy allow to reuse the \ac{IV}.
+
+\subsection{Summary}
+\ac{WEP} is defined in \ac{IEEE}802.11, and it aims to provide confidentiality, data integrity and access control over \ac{WLAN}. Nonetheless, none of the main goals of \ac{WEP} is feasible as an skilful
+or patient attacker can break any goal at any time in the signal range of \ac{WLAN}.
