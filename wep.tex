@@ -1,13 +1,13 @@
-\section{Wired Equivalent Protocol - WEP}
+\section{Wired Equivalent Protocol - WEP}\label{section:wep}
 
 
-\ac{WEP} is a security protocol, defined in \ac{IEEE}802.11, to secure link-level data throughout wireless transmission. Its message encryption and decryption mechanism was aimed to provide confidentiality, access control and data integrity from data-link layer.
-
+\ac{WEP} is a security protocol, defined in \ac{IEEE}802.11, to secure link-level data throughout wireless transmission. Its message encryption and decryption mechanism was aimed to provide three main goals: confidentiality, access control and data integrity from data-link layer.
+\subsection{WEP mechanism}\label{subsec:wep_mec}
 \ac{WEP} mechanism is based on the \ac{RC4} algorithm\cite{mousa2006evaluation} that aims to supply security to \ac{WLAN} equivalent to \ac{LAN}. In general, the \ac{WEP} encryption of a frame includes three steps described in details in \ac{IEEE}802.11 standard \cite{al2006ieee}. The encryption algorithm takes input as a plaintext $M$ and produce the output $C$ and transmit over the network. The three steps of \ac{WEP} would be described as below
 \begin{steps}
-	\item \ac{WEP} calculates checksum $c(M)$ and concatenate with the original plaintext $M$, we have the message $P = <M, c(M)>$
+	\item \ac{WEP} calculates checksum $c(M)$ and concatenate with the original plaintext $M$, we have the message $P = \langle M, c(M) \rangle $
 	\item \ac{WEP} would encrypt the message $P$ achieved in the first step using \ac{RC4}. \ac{RC4} generates a keystream relying on the \ac{IV} $v$ and a key $k$. The keystream is denoted as $RC4(v,k)$. We use \ac{Xor}on the plain text and key stream to get the output $C$ of this step is $C = P \oplus RC4(v,k)$
-	\item Concatenate $C$ achieved in step 2 with the \ac{IV} and transmit $<C, v>$ over the network.
+	\item Concatenate $C$ achieved in step 2 with the \ac{IV} and transmit $\langle C, v \rangle $ over the network.
 \end{steps}
 
 An \ac{AP} would catch the message and decrypt it by using \ac{Xor} operation over the encrypted message with \ac{RC4} key stream.  First, \ac{WEP} would extract message in to $v$ and $C$. After that, a \ac{RC4} keystream would be generated and \ac{Xor} it against $C$ to obtain plaintext $P$:
@@ -27,7 +27,7 @@ $P$ includes $M$ and checksum $c(M)$. The receiver would split $P$ and check if 
 	\label{fig:wep}
 \end{figure}
 
-\subsection{Keystream reuse attack}
+\subsection{Keystream reuse attack} \label{subsec:keystream_reuse}
 
 The main problem of \ac{WEP} is the length of secret key. As the length of shared secrete key is $40bits$, the possibility of reusing this secret key is extremely high \cite{al2006ieee}. Although \ac{RC4} algorithm can support the length of the secret key up to $104bits$, it would be infeasible to stop attackers to explore the key in less than 15 minutes \cite{convery2003cisco}. Furthermore, the use of shared secret key which is higher than $40bits$ might causes communication problems as the default setting on other devices is $40bits$. 
 
@@ -68,12 +68,79 @@ As above discussion, if one plaintext is known, it is easy to derive the content
 
 An attacker might derive the contents of several predictable messages. Login, an authenticated step familiar to Internet users, often has some password prompts or welcome message, which can be acquired by an adversary. Another example is that the attacker could analyse the traffic patterns and lengths. Those techniques would provide a large quantity of plaintexts feasible to keystream reuse attack.
 
-Another technique is to cause the plaintext to be transmitted between devices under control of that attacker. The attacker may also send spam e-mail to an user and wait for them to check over wireless link. This method is considered thoughtful as it does not raise too many alarms.
+Another technique is to cause the plaintext to be transmitted between devices under control of that attacker then observe the encrypted form and decrypted form of that plaintext. The attacker may also send spam e-mail to an user and wait for them to check over wireless link. This method is considered thoughtful as it does not raise too many alarms.
 
-In some circumstances, plaintext obtaining seems to be simpler. As the attacker would actively observe the encrypted from and decrypted form of messages over network. As \ac{STA} broadcasts the messages to all \ac{AP}, this problem is unavoidable.
+In some circumstances, plaintext obtaining seems to be simpler. The attacker could actively observe the encrypted from and decrypted form of messages over network. As \ac{STA} broadcasts the messages to all \ac{AP}, this problem is unavoidable.
 
 \subsubsection{Decryptional Dictionaries}~\\
 Once the plaintext of a ciphertext is obtained, the attacker would probe the value of keystream used in that ciphertext. Overtime, he or she could build a table of the keystream corresponding to each \ac{IV} as well as plaintext. The complete table might encroach $24GB$ external memory and it would help the attacker to immediately decrypt each ciphertext in \ac{WLAN} with very little work. In \cite{al2006ieee}, \citeauthor{al2006ieee} call this attack is "dictionary attack".
 
 
+\subsection{Message Authentication}
+Another provision of \ac{WEP} is message authentication through Integrity checksum. The Integrity checksum is utilised to ensure that the message is not modified. It is implemented as a \ac{CRC} variant (\ac{CRC}-32), a piece of the packet decrypted payload.
 
+However, the protection of \ac{CRC} is not sufficient to protect message from modification. it is designed to check if an error appears in the message, yet it is not resistant to malicious attacks. Once again, the \ac{WEP} protocol use stream cipher exacerbates the vulnerability of \ac{CRC}.
+
+\subsubsection{Message Modification}\label{subsub:mess_modi}
+\newtheorem{property}{Property}
+
+\begin{property}
+	\ac{WEP}'s checksum is a linear function of the message
+	\label{prop:linear}
+\end{property}
+
+The Property \autoref{prop:linear} reveals that \ac{CRC} checksumming function distributes over \ac{Xor} operations.
+\begin{equation}
+	c(a\oplus b) = c(a) \oplus c(b)\, \forall a,b
+	\label{equation:linear_prop}
+\end{equation}
+
+As a consequence, the process of modifying ciphertexts without intervening the checksum become possible. In \autoref{subsec:wep_mec}, we describe the final step of sending message in \ac{WEP}:
+\begin{equation}
+	A \rightarrow B : \langle v,C \rangle 
+\end{equation}
+While $C$ is ciphertext $C = RC4(v,k) \oplus \langle M, c(M) \rangle $ and $v$ is $IV$. We would describe the technique below to turn a transmitted message $\langle v, C \rangle $ into $\langle v, C' \rangle $ in which $C'$ decrypts $M'$. $M'$ is modified message of $M$ by using \ac{Xor} operation $M' = M\oplus \Delta$ in which $\Delta$ is chosen arbitrarily.
+
+In order to achieve $C'$, an enemy only needs to do the \ac{Xor} operation over $C$ and the concatenation of $\Delta$ and $c(\Delta)$ where $c(\Delta)$ is the checksum of $\Delta$.
+\begin{align}
+	C' &= C \oplus \langle\Delta, c(\Delta)\rangle\\
+	&= RC4(v, k) \oplus \langle M, c(M)\rangle \oplus \langle\Delta, c(\Delta)\rangle \label{equation:xor_application}\\	
+	&= RC4(v, k) \oplus \langle M \oplus \Delta, c(M) \oplus c(\Delta) \rangle
+	\label{equation:xor_delta_result} 
+\end{align}
+
+From \autoref{equation:linear_prop} and \autoref{equation:xor_delta_result} we have:
+\begin{equation}
+	C' = RC4(v,k) \oplus \langle M\oplus\Delta, c(M, \Delta)\rangle
+\end{equation}
+
+Consequently, an opponent can make random modifications to any encrypted message without the fear of detection. From this point of view, \ac{WEP} fails to provide data integrity over \ac{WLAN} - one of three main goals of \ac{WEP} described in the beginning of the \autoref{section:wep}.
+
+\subsubsection{Message injection}~\\
+The previous \autoref{subsub:mess_modi} describes the technique that an attacker might use to modify the message without the fear of detection. Nevertheless, content modification might make user hesitate due to its irrelevant context in the message. That really holds the attacker back, yet he might use another technique to take down the last goal of \ac{WEP} - access control.
+
+\begin{property}
+	The \ac{CRC}-32 checksum is a key-free function of the message \cite{borisov2001intercepting}
+	\label{prop:message_inject}
+\end{property}
+
+The Property\autoref{prop:message_inject} means that if any person knows the plaintext, he will be able to calculate the checksum. Therefore, an attacker might inject arbitrary traffic into the network.
+
+The discussion in \autoref{subsec:keystream_reuse} implies that the known plaintext and ciphertext would reveal the keystream. This keystream would be reused to create new packet using the same \ac{IV}:
+
+\begin{equation}
+	P \oplus C = P \oplus (P \oplus RC4(v, k)) = RC4(v, k)
+	\label{equation:get_rc4}
+\end{equation}
+
+The attacker now would be capable of using $RC4(v, k)$ achieved in \autoref{equation:get_rc4} to encrypt message $M'$ and $C' = \langle M', c(M')\rangle$:
+
+\begin{equation}
+ (A) \rightarrow B: \langle v, C'\rangle
+\end{equation}
+
+This technique again does not raise any alarm because of \ac{WEP} privacy allow to reuse the \ac{IV}.
+
+\subsection{Summary}
+\ac{WEP} is defined in \ac{IEEE}802.11, and it aims to provide confidentiality, data integrity and access control over \ac{WLAN}. Nonetheless, none of the main goals of \ac{WEP} is feasible as an skilful
+or patient attacker can break any goal at any time in the signal range of \ac{WLAN}.
